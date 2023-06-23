@@ -1,8 +1,7 @@
 package jpabook.jpashop.repository;
 
 import jakarta.persistence.EntityManager;
-import jpabook.jpashop.domain.Member;
-//import jpabook.jpashop.domain.Order;
+import jpabook.jpashop.domain.Order;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -11,22 +10,26 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 public class OrderRepository {
-    /*private final EntityManager em;
-    void save(Order order) {
+    private final EntityManager em;
+
+    public void save(Order order) {
         em.persist(order);
     }
 
-    Order findOne(Long id) {
+    public Order findOne(Long id) {
         return em.find(Order.class, id);
     }
 
-    List<Order> findAll() {
-       return em.createQuery("select m from Order m", Order.class)
-               .getResultList();
-    }
+    public List<Order> findAllByString(OrderSearch orderSearch) {
 
-    void delete(Order order)  {
-        em.remove(order);
-    }*/
+        return em.createQuery("select o from Order o join o.member m" +
+                        " where o.status = :status " +
+                        " and m.name like :name", Order.class)
+                .setParameter("status", orderSearch.getOrderStatus())
+                .setParameter("name", orderSearch.getMemberName())
+                .setMaxResults(1000)
+                .getResultList();
+
+    }
 
 }

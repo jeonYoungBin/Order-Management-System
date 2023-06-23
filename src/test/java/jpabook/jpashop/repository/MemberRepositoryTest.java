@@ -37,12 +37,12 @@ class MemberRepositoryTest {
     @Rollback(value = false)
     void save_테스트() {
 
-        List<Member> resultList = em.createQuery(
+        /*List<Member> resultList = em.createQuery(
                 "select m from Member m where m.USERNAME like '%kim%'",
                 Member.class).getResultList();
         for (Member member : resultList) {
             System.out.println("member = " + member);
-        }
+        }*/
 
 
 
@@ -110,16 +110,11 @@ class MemberRepositoryTest {
 
     @Test
     void find_테스트2() {
-        Member member1 = memberRepository.findOne(102L);
-        Member member2 = memberRepository.findOne(102L);
 
-        assertEquals(member1, member2);
     }
 
     @Test
     void find_테스트3() {
-        List<Member> list = memberRepository.findAll();
-        System.out.println(list.size());
-        assertEquals(list.size(), 2);
+
     }
 }

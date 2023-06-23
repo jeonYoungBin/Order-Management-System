@@ -1,8 +1,8 @@
 package jpabook.jpashop.domain.Item;
 
 import jakarta.persistence.*;
-import jpabook.jpashop.domain.BaseEntity;
 import jpabook.jpashop.domain.Category;
+import jpabook.jpashop.exception.NotEnoughStockException;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,17 +11,33 @@ import java.util.List;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn
+@DiscriminatorColumn(name = "dtype")
 @Getter @Setter
-public abstract class Item extends BaseEntity {
+public abstract class Item {
     @Id @GeneratedValue
-    @Column(name = "ITEM_ID")
+    @Column(name = "item_id")
     private Long id;
 
     private String name;
     private int price;
     private int stockQuantity;
 
-    @ManyToMany(mappedBy = "items")
+    @ManyToMany
+    @JoinTable(name = "category_item",
+            joinColumns = @JoinColumn(name = "category_id"),
+            inverseJoinColumns = @JoinColumn(name = "item_id"))
     private List<Category> categories = new ArrayList<>();
+    //==비즈니스 로직
+
+    public void addStock(int quantity) {
+        this.stockQuantity += quantity;
+    }
+
+    public void removeStock(int quantity) {
+        int restStock = this.stockQuantity - quantity;
+        if (restStock < 0) {
+            throw new NotEnoughStockException("need more stock");
+        }
+        this.stockQuantity = restStock;
+    }
 }
