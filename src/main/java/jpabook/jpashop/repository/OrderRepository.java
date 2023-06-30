@@ -1,15 +1,29 @@
 package jpabook.jpashop.repository;
 
+//import com.querydsl.core.types.Projections;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-import jpabook.jpashop.domain.Order;
+import jpabook.jpashop.domain.*;
+
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
+
+import static jpabook.jpashop.domain.QMember.member;
+import static jpabook.jpashop.domain.QOrder.order;
 
 @Repository
 @RequiredArgsConstructor
 public class OrderRepository {
+
+    @Autowired
+    JPAQueryFactory jpaQueryFactory;
     private final EntityManager em;
 
     public void save(Order order) {
@@ -21,15 +35,28 @@ public class OrderRepository {
     }
 
     public List<Order> findAllByString(OrderSearch orderSearch) {
+        return jpaQueryFactory
+                .select(order)
+                .from(order)
+                .join(order.member, member)
+                .where(nameLike(orderSearch.getMemberName()),
+                        statusEq(orderSearch.getOrderStatus()))
+                .fetch();
 
-        return em.createQuery("select o from Order o join o.member m" +
-                        " where o.status = :status " +
-                        " and m.name like :name", Order.class)
-                .setParameter("status", orderSearch.getOrderStatus())
-                .setParameter("name", orderSearch.getMemberName())
-                .setMaxResults(1000)
-                .getResultList();
+    }
 
+    private BooleanExpression statusEq(OrderStatus statusCond){
+        if (statusCond == null){
+            return null;
+        }
+        return order.status.eq(statusCond);
+    }
+
+    private BooleanExpression nameLike(String nameCond){
+        if (!StringUtils.hasText(nameCond)){
+            return null;
+        }
+        return member.name.like(nameCond);
     }
 
 }
